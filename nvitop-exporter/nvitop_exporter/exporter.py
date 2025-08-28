@@ -25,8 +25,8 @@ from typing import Sequence
 from prometheus_client import REGISTRY, CollectorRegistry, Gauge, Info
 
 from nvitop import Device, GpuProcess, MiB, MigDevice, PhysicalDevice, host
-from nvitop_exporter.utils import get_ip_address
 from nvitop_exporter.k8s import KubernetesHelper
+from nvitop_exporter.utils import get_ip_address
 
 
 class PrometheusExporter:  # pylint: disable=too-many-instance-attributes
@@ -608,13 +608,13 @@ class PrometheusExporter:  # pylint: disable=too-many-instance-attributes
                         host_snapshot = host_snapshots[pid, username] = process.host_snapshot()
                     else:
                         host_snapshot = host_snapshots[pid, username]
-                    
+
                     # Get Kubernetes pod information if available
                     pod_info = self.k8s_helper.get_pod_info_from_pid(pid)
-                    pod_name = pod_info.name if pod_info else ""
-                    pod_namespace = pod_info.namespace if pod_info else ""
-                    container_name = pod_info.container_name if pod_info else ""
-                    
+                    pod_name = pod_info.name if pod_info else ''
+                    pod_namespace = pod_info.namespace if pod_info else ''
+                    container_name = pod_info.container_name if pod_info else ''
+
                     self.process_info.labels(
                         hostname=self.hostname,
                         index=index,
@@ -674,11 +674,11 @@ class PrometheusExporter:  # pylint: disable=too-many-instance-attributes
                         ).set(value)
 
         # Update alive_pids with pod information
-        for (pid, username), host_snapshot in host_snapshots.items():
+        for pid, username in host_snapshots:
             pod_info = self.k8s_helper.get_pod_info_from_pid(pid)
-            pod_name = pod_info.name if pod_info else ""
-            pod_namespace = pod_info.namespace if pod_info else ""
-            container_name = pod_info.container_name if pod_info else ""
+            pod_name = pod_info.name if pod_info else ''
+            pod_namespace = pod_info.namespace if pod_info else ''
+            container_name = pod_info.container_name if pod_info else ''
             alive_pids.add((pid, username, pod_name, pod_namespace, container_name))
         for pid, username, pod_name, pod_namespace, container_name in previous_alive_pids.difference(alive_pids):
             for collector in (
