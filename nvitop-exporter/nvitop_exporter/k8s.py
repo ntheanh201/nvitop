@@ -54,6 +54,30 @@ class KubernetesHelper:
 
         return any(os.environ.get(var) for var in k8s_env_vars)
 
+    def detect_k8s_distribution(self) -> str:
+        """Detect the Kubernetes distribution type.
+
+        Returns:
+            String indicating the K8s distribution: 'k3s', 'rke2', 'standard', 'unknown'
+        """
+        # Check for K3s
+        if os.path.exists('/run/k3s/containerd/containerd.sock') or os.path.exists('/var/lib/rancher/k3s'):
+            return 'k3s'
+
+        # Check for RKE2
+        if os.path.exists('/var/lib/rancher/rke2') or os.path.exists('/run/k3s/containerd/containerd.sock'):
+            return 'rke2'
+
+        # Check for standard containerd
+        if os.path.exists('/run/containerd/containerd.sock'):
+            return 'standard'
+
+        # Check for Docker
+        if os.path.exists('/var/run/docker.sock'):
+            return 'docker'
+
+        return 'unknown'
+
     def get_pod_info_from_pid(self, pid: int) -> PodInfo | None:
         """Get pod information for a given process ID.
 
@@ -106,12 +130,20 @@ class KubernetesHelper:
         v1_patterns = [
             r'/kubepods(?:\.slice)?/(?:burstable|besteffort|guaranteed)/pod([a-f0-9\-]{36})/([a-f0-9]{64})',
             r'/kubepods(?:\.slice)?/pod([a-f0-9\-]{36})/([a-f0-9]{64})',
+            # K3s/RKE2 patterns
+            r'/k8s\.io/([a-f0-9\-]{36})/([a-f0-9]{64})',
+            r'/rancher\.io/([a-f0-9\-]{36})/([a-f0-9]{64})',
         ]
 
         # Pattern for cgroup v2 (systemd)
         v2_patterns = [
             r'/kubepods\.slice/kubepods-(?:burstable|besteffort|guaranteed)\.slice/kubepods-(?:burstable|besteffort|guaranteed)-pod([a-f0-9_\-]{36})\.slice/cri-containerd-([a-f0-9]{64})\.scope',
             r'/kubepods\.slice/kubepods-pod([a-f0-9_\-]{36})\.slice/cri-containerd-([a-f0-9]{64})\.scope',
+            # K3s/RKE2 systemd patterns
+            r'/k3s\.slice/k3s-pod([a-f0-9_\-]{36})\.slice/cri-containerd-([a-f0-9]{64})\.scope',
+            r'/rke2\.slice/rke2-pod([a-f0-9_\-]{36})\.slice/cri-containerd-([a-f0-9]{64})\.scope',
+            # Alternative containerd patterns
+            r'/system\.slice/containerd\.service/kubepods-(?:burstable|besteffort|guaranteed)-pod([a-f0-9_\-]{36})\.slice/cri-containerd-([a-f0-9]{64})\.scope',
         ]
 
         all_patterns = v1_patterns + v2_patterns
@@ -160,15 +192,37 @@ class KubernetesHelper:
         Kubernetes labels that contain pod metadata.
         """
         try:
-            # Try containerd runtime first
-            containerd_path = f'/run/containerd/io.containerd.runtime.v2.task/k8s.io/{container_id[:12]}'
-            if os.path.exists(containerd_path):
-                return self._parse_containerd_labels(containerd_path, container_id)
+            # Try multiple containerd runtime paths for different K8s distributions
+            containerd_paths = [
+                # Standard containerd
+                f'/run/containerd/io.containerd.runtime.v2.task/k8s.io/{container_id[:12]}',
+                # RKE2/K3s containerd
+                f'/run/k3s/containerd/io.containerd.runtime.v2.task/k8s.io/{container_id[:12]}',
+                # Alternative K3s path
+                f'/var/lib/rancher/k3s/agent/containerd/io.containerd.runtime.v2.task/k8s.io/{container_id[:12]}',
+                # Kind/kubeadm
+                f'/var/lib/containerd/io.containerd.runtime.v2.task/k8s.io/{container_id[:12]}',
+            ]
 
-            # Try docker runtime
-            docker_inspect_path = f'/var/lib/docker/containers/{container_id}/config.v2.json'
-            if os.path.exists(docker_inspect_path):
-                return self._parse_docker_labels(docker_inspect_path)
+            for containerd_path in containerd_paths:
+                if os.path.exists(containerd_path):
+                    result = self._parse_containerd_labels(containerd_path, container_id)
+                    if result:
+                        return result
+
+            # Try docker runtime paths
+            docker_paths = [
+                # Standard docker
+                f'/var/lib/docker/containers/{container_id}/config.v2.json',
+                # Alternative docker location
+                f'/var/lib/docker/overlay2/{container_id}/merged/config.v2.json',
+            ]
+
+            for docker_path in docker_paths:
+                if os.path.exists(docker_path):
+                    result = self._parse_docker_labels(docker_path)
+                    if result:
+                        return result
 
         except (OSError, PermissionError):
             pass

@@ -21,16 +21,28 @@ def test_cgroup_v1_parsing() -> None:
 
     k8s_helper = KubernetesHelper(enable_k8s=True)
 
-    # Mock cgroup v1 content
-    cgroup_content = """12:pids:/kubepods/burstable/pod12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+    # Test standard Kubernetes cgroup v1
+    cgroup_content_standard = """12:pids:/kubepods/burstable/pod12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 11:net_cls,net_prio:/kubepods/burstable/pod12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
 10:freezer:/kubepods/burstable/pod12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"""
 
-    pod_info = k8s_helper._parse_cgroup_for_pod_info(cgroup_content)
-
+    pod_info = k8s_helper._parse_cgroup_for_pod_info(cgroup_content_standard)
+    print('Standard K8s cgroup v1:')
     if pod_info:
         print(f'✅ Found pod info: {pod_info.name} in {pod_info.namespace}')
         print(f'   Container: {pod_info.container_name}, UID: {pod_info.uid}')
+    else:
+        print('❌ No pod info found')
+
+    # Test K3s/RKE2 cgroup v1
+    cgroup_content_k3s = """12:pids:/k8s.io/12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+11:net_cls,net_prio:/k8s.io/12345678-1234-1234-1234-123456789abc/1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"""
+
+    pod_info_k3s = k8s_helper._parse_cgroup_for_pod_info(cgroup_content_k3s)
+    print('K3s/RKE2 cgroup v1:')
+    if pod_info_k3s:
+        print(f'✅ Found pod info: {pod_info_k3s.name} in {pod_info_k3s.namespace}')
+        print(f'   Container: {pod_info_k3s.container_name}, UID: {pod_info_k3s.uid}')
     else:
         print('❌ No pod info found')
 
@@ -64,6 +76,7 @@ def test_kubernetes_detection() -> None:
     # Test with K8s enabled but no environment
     k8s_helper_enabled = KubernetesHelper(enable_k8s=True)
     print(f'K8s enabled, detected environment: {k8s_helper_enabled._in_kubernetes}')
+    print(f'Detected distribution: {k8s_helper_enabled.detect_k8s_distribution()}')
 
     # Test with mock environment variable
     os.environ['KUBERNETES_SERVICE_HOST'] = 'kubernetes.default.svc'

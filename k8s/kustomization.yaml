@@ -8,7 +8,9 @@ metadata:
 resources:
 - namespace.yaml
 - serviceaccount.yaml
-- daemonset.yaml
+- clusterrole.yaml
+- clusterrolebinding.yaml
+- daemonset-k3s.yaml  # Using K3s/RKE2 optimized version
 - service.yaml
 - servicemonitor.yaml
 
@@ -19,4 +21,4 @@ commonLabels:
 
 images:
 - name: ghcr.io/ntheanh201/nvitop
-  newTag: exporter-v1.5.4
+  newTag: exporter-k8s

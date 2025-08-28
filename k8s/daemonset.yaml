@@ -68,6 +68,7 @@ spec:
         securityContext:
           privileged: true
           runAsUser: 0
+          readOnlyRootFilesystem: false
         volumeMounts:
         - name: dev
           mountPath: /dev
@@ -81,18 +82,7 @@ spec:
         - name: nvidia-ml
           mountPath: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
           readOnly: true
-        - name: docker-sock
-          mountPath: /var/run/docker.sock
-          readOnly: true
-        - name: containerd-sock
-          mountPath: /run/containerd/containerd.sock
-          readOnly: true
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-          readOnly: true
-        - name: run-containerd
-          mountPath: /run/containerd
-          readOnly: true
+        # Minimal mounts - the code will auto-detect available runtime paths
         livenessProbe:
           httpGet:
             path: /metrics
@@ -123,20 +113,7 @@ spec:
         hostPath:
           path: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
           type: File
-      - name: docker-sock
-        hostPath:
-          path: /var/run/docker.sock
-          type: Socket
-      - name: containerd-sock
-        hostPath:
-          path: /run/containerd/containerd.sock
-          type: Socket
-      - name: var-lib-docker
-        hostPath:
-          path: /var/lib/docker
-      - name: run-containerd
-        hostPath:
-          path: /run/containerd
+      # Minimal volumes - use specific daemonset-k3s.yaml or daemonset-standard.yaml for full functionality
       serviceAccountName: nvitop-exporter
       restartPolicy: Always
       dnsPolicy: ClusterFirstWithHostNet
