@@ -6,13 +6,13 @@ metadata:
   namespace: monitoring
 
 resources:
-- namespace.yaml
-- serviceaccount.yaml
-- clusterrole.yaml
-- clusterrolebinding.yaml
-- daemonset-k3s.yaml  # Using K3s/RKE2 optimized version
-- service.yaml
-- servicemonitor.yaml
+  - namespace.yaml
+  - serviceaccount.yaml
+  - clusterrole.yaml
+  - clusterrolebinding.yaml
+  - daemonset-standard.yaml
+  - service.yaml
+  - servicemonitor.yaml
 
 commonLabels:
   app.kubernetes.io/name: nvitop-exporter
@@ -20,5 +20,5 @@ commonLabels:
   app.kubernetes.io/part-of: monitoring
 
 images:
-- name: ghcr.io/ntheanh201/nvitop
-  newTag: exporter-k8s
+  - name: ghcr.io/ntheanh201/nvitop
+    newTag: exporter-k8s

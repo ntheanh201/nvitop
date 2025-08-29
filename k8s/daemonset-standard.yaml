@@ -28,6 +28,12 @@ spec:
       containers:
         - name: nvitop-exporter
           image: ghcr.io/ntheanh201/nvitop:exporter
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: true
+          terminationMessagePath: /tmp/termination-log
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -54,9 +60,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "200m"
-          securityContext:
-            privileged: true
-            runAsUser: 0
           volumeMounts:
             - name: dev
               mountPath: /dev
