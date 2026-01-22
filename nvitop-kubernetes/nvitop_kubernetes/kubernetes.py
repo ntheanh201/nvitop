@@ -9,7 +9,7 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from nvitop.api.utils import NA, NaType, memoize_when_activated
+from nvitop.api import NA, NaType, memoize_when_activated
 
 
 if TYPE_CHECKING:
@@ -28,7 +28,9 @@ except ImportError:
 
 
 __all__ = [
+    'KUBERNETES_AVAILABLE',
     'KubernetesClient',
+    'KubernetesError',
     'KubernetesInfo',
     'extract_pod_from_pid',
     'get_kubernetes_client',

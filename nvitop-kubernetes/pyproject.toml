@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nvitop-kubernetes"
+description = "Kubernetes integration for nvitop - the interactive NVIDIA-GPU process viewer."
+readme = "README.md"
+requires-python = ">= 3.8"
+authors = [{ name = "Xuehai Pan", email = "XuehaiPan@pku.edu.cn" }]
+license = { text = "Apache-2.0 AND GPL-3.0-only" }
+keywords = [
+    "nvidia",
+    "nvidia-smi",
+    "NVIDIA",
+    "NVML",
+    "CUDA",
+    "GPU",
+    "top",
+    "monitoring",
+    "kubernetes",
+    "k8s",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: GPU",
+    "Environment :: GPU :: NVIDIA CUDA",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Topic :: System :: Hardware",
+    "Topic :: System :: Monitoring",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "nvitop >= 1.0.0",
+    "kubernetes >= 28.0.0, < 35.0.0",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/XuehaiPan/nvitop"
+Repository = "https://github.com/XuehaiPan/nvitop"
+Documentation = "https://nvitop.readthedocs.io"
+"Bug Report" = "https://github.com/XuehaiPan/nvitop/issues"
+
+[tool.setuptools.packages.find]
+include = ["nvitop_kubernetes", "nvitop_kubernetes.*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "nvitop_kubernetes.version.__version__"}

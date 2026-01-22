@@ -21,7 +21,6 @@ from nvitop.api import (
     collector,
     device,
     host,
-    kubernetes,
     libcuda,
     libcudart,
     libnvml,
@@ -40,14 +39,7 @@ from nvitop.api.device import (
     normalize_cuda_visible_devices,
     parse_cuda_visible_devices,
 )
-from nvitop.api.kubernetes import (
-    KubernetesClient,
-    KubernetesError,
-    KubernetesInfo,
-    extract_pod_from_pid,
-    get_kubernetes_info,
-    is_kubernetes_environment,
-)
+
 from nvitop.api.libnvml import NVMLError, nvmlCheckReturn
 from nvitop.api.process import GpuProcess, HostProcess, command_join
 from nvitop.api.utils import (  # explicitly export these to appease mypy
@@ -93,14 +85,7 @@ __all__ = [  # noqa: RUF022
     'HostProcess',
     'GpuProcess',
     'command_join',
-    # nvitop.api.kubernetes
-    'kubernetes',
-    'KubernetesClient',
-    'KubernetesError',
-    'KubernetesInfo',
-    'is_kubernetes_environment',
-    'extract_pod_from_pid',
-    'get_kubernetes_info',
+
     # nvitop.api.collector
     'take_snapshots',
     'collect_in_background',

@@ -42,27 +42,6 @@ from nvitop.api.utils import (
 )
 
 
-# Optional Kubernetes integration
-try:
-    from nvitop.api import kubernetes
-    from nvitop.api.kubernetes import KubernetesInfo
-except ImportError:
-    kubernetes = None  # type: ignore[assignment]
-
-    def kubernetes_info_fallback(**kwargs: Any) -> Any:
-        """Fallback function for when kubernetes module is not available.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments to be added to the fallback object.
-
-        Returns:
-            A dynamic object with the provided kwargs as attributes.
-        """
-        return type('KubernetesInfo', (), kwargs)()
-
-    KubernetesInfo = kubernetes_info_fallback  # type: ignore[misc, assignment]
-
-
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable
     from typing_extensions import Self  # Python 3.11+
@@ -440,77 +419,10 @@ class HostProcess(host.Process, ABC):
                     try:
                         self.cmdline.cache_activate(self)  # type: ignore[attr-defined]
                         self.running_time.cache_activate(self)  # type: ignore[attr-defined]
-                        self._get_kubernetes_info.cache_activate(self)  # type: ignore[attr-defined]
                         yield
                     finally:
                         self.cmdline.cache_deactivate(self)  # type: ignore[attr-defined]
                         self.running_time.cache_deactivate(self)  # type: ignore[attr-defined]
-                        self._get_kubernetes_info.cache_deactivate(self)  # type: ignore[attr-defined]
-
-    # Kubernetes integration methods
-    @memoize_when_activated
-    def _get_kubernetes_info(self) -> KubernetesInfo:
-        """Get cached Kubernetes information for this process."""
-        if kubernetes is not None:
-            try:
-                return kubernetes.get_kubernetes_info(self.pid)
-            except (ImportError, kubernetes.KubernetesError, OSError):
-                pass
-
-        return KubernetesInfo(
-            pod_name=NA,
-            pod_namespace=NA,
-            pod_uid=NA,
-            container_name=NA,
-            container_id=NA,
-            node_name=NA,
-            metadata={},
-        )
-
-    @auto_garbage_clean(fallback=NA)
-    def pod_name(self) -> str | NaType:
-        """Get the Kubernetes pod name if running in a pod."""
-        return self._get_kubernetes_info().pod_name
-
-    @auto_garbage_clean(fallback=NA)
-    def pod_namespace(self) -> str | NaType:
-        """Get the Kubernetes pod namespace if running in a pod."""
-        return self._get_kubernetes_info().pod_namespace
-
-    @auto_garbage_clean(fallback=NA)
-    def pod_uid(self) -> str | NaType:
-        """Get the Kubernetes pod UID if running in a pod."""
-        return self._get_kubernetes_info().pod_uid
-
-    @auto_garbage_clean(fallback=NA)
-    def container_name(self) -> str | NaType:
-        """Get the container name if running in a container."""
-        return self._get_kubernetes_info().container_name
-
-    @auto_garbage_clean(fallback=NA)
-    def container_id(self) -> str | NaType:
-        """Get the container ID if running in a container."""
-        return self._get_kubernetes_info().container_id
-
-    @auto_garbage_clean(fallback=NA)
-    def node_name(self) -> str | NaType:
-        """Get the Kubernetes node name if running in a pod."""
-        return self._get_kubernetes_info().node_name
-
-    @auto_garbage_clean(fallback=NA)
-    def pod_labels(self) -> dict[str, str] | NaType:
-        """Get the Kubernetes pod labels if running in a pod."""
-        return self._get_kubernetes_info().pod_labels
-
-    @auto_garbage_clean(fallback=NA)
-    def nvidia_gpu_requests(self) -> int | NaType:
-        """Get the number of NVIDIA GPUs requested by this process's container."""
-        return self._get_kubernetes_info().nvidia_gpu_requests
-
-    @auto_garbage_clean(fallback=NA)
-    def nvidia_gpu_limits(self) -> int | NaType:
-        """Get the number of NVIDIA GPUs limited to this process's container."""
-        return self._get_kubernetes_info().nvidia_gpu_limits
 
     def as_snapshot(
         self,
