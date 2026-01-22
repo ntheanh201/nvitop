@@ -27,6 +27,14 @@ from prometheus_client import REGISTRY, CollectorRegistry, Gauge, Info
 from nvitop import Device, GpuProcess, MiB, MigDevice, PhysicalDevice, host
 from nvitop_exporter.utils import get_ip_address
 
+# Import Kubernetes integration from nvitop-kubernetes
+try:
+    from nvitop_kubernetes import get_kubernetes_info
+    KUBERNETES_AVAILABLE = True
+except ImportError:
+    KUBERNETES_AVAILABLE = False
+    get_kubernetes_info = None  # type: ignore[assignment, misc]
+
 
 class PrometheusExporter:  # pylint: disable=too-many-instance-attributes
     """Prometheus exporter built on top of ``nvitop``."""
@@ -797,18 +805,25 @@ class PrometheusExporter:  # pylint: disable=too-many-instance-attributes
                     else:
                         host_snapshot = host_snapshots[pid, username]
 
-                    # Collect Kubernetes information (always enabled)
-                    try:
-                        k8s_pod_name = process.pod_name()
-                        k8s_pod_namespace = process.pod_namespace()
-                        k8s_pod_uid = process.pod_uid()
-                        k8s_container_name = process.container_name()
-                        k8s_container_id = process.container_id()
-                        k8s_node_name = process.node_name()
-                        k8s_pod_labels = process.pod_labels()
-                        k8s_gpu_requests = process.nvidia_gpu_requests()
-                        k8s_gpu_limits = process.nvidia_gpu_limits()
-                    except (ImportError, OSError, AttributeError, KeyError, ValueError):
+                    # Collect Kubernetes information (if nvitop-kubernetes is available)
+                    if KUBERNETES_AVAILABLE and get_kubernetes_info is not None:
+                        try:
+                            k8s_info = get_kubernetes_info(pid)
+                            k8s_pod_name = str(k8s_info.pod_name) if k8s_info.pod_name else 'N/A'
+                            k8s_pod_namespace = str(k8s_info.pod_namespace) if k8s_info.pod_namespace else 'N/A'
+                            k8s_pod_uid = str(k8s_info.pod_uid) if k8s_info.pod_uid else 'N/A'
+                            k8s_container_name = str(k8s_info.container_name) if k8s_info.container_name else 'N/A'
+                            k8s_container_id = str(k8s_info.container_id) if k8s_info.container_id else 'N/A'
+                            k8s_node_name = str(k8s_info.node_name) if k8s_info.node_name else 'N/A'
+                            k8s_pod_labels = k8s_info.pod_labels if isinstance(k8s_info.pod_labels, dict) else {}
+                            k8s_gpu_requests = k8s_info.nvidia_gpu_requests if isinstance(k8s_info.nvidia_gpu_requests, int) else 0
+                            k8s_gpu_limits = k8s_info.nvidia_gpu_limits if isinstance(k8s_info.nvidia_gpu_limits, int) else 0
+                        except (ImportError, OSError, AttributeError, KeyError, ValueError):
+                            k8s_pod_name = k8s_pod_namespace = k8s_pod_uid = 'N/A'
+                            k8s_container_name = k8s_container_id = k8s_node_name = 'N/A'
+                            k8s_pod_labels = {}
+                            k8s_gpu_requests = k8s_gpu_limits = 0
+                    else:
                         k8s_pod_name = k8s_pod_namespace = k8s_pod_uid = 'N/A'
                         k8s_container_name = k8s_container_id = k8s_node_name = 'N/A'
                         k8s_pod_labels = {}
