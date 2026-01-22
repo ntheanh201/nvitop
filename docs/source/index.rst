@@ -58,7 +58,7 @@ Install from PyPI (|PyPI Package|_):
 
 .. note::
 
-    Python 3.8+ is required, and Python versions lower than 3.8 is not supported.
+    Python 3.8+ is required, and Python versions lower than 3.8 are not supported.
 
 Install from conda-forge (|Conda-forge Package|_):
 
@@ -77,13 +77,12 @@ Or, clone this repo and install manually:
 
 .. code:: bash
 
-    git clone --depth=1 https://github.com/XuehaiPan/nvitop.git
-    cd nvitop
+    git clone --depth=1 https://github.com/XuehaiPan/nvitop.git && cd nvitop
     pip3 install .
 
 If this repo is useful to you, please star ⭐️ it to let more people know 🤗. |GitHub Repo Stars|_
 
-.. |Commit Count| image:: https://img.shields.io/github/commits-since/XuehaiPan/nvitop/v1.6.0
+.. |Commit Count| image:: https://img.shields.io/github/commits-since/XuehaiPan/nvitop/v1.6.1
 
 ------
 

@@ -137,8 +137,8 @@ def select_devices(
     force_index: bool = False,
     min_count: int = 0,
     max_count: int | None = None,
-    min_free_memory: int | str | None = None,  # in bytes or human readable
-    min_total_memory: int | str | None = None,  # in bytes or human readable
+    min_free_memory: int | str | None = None,  # in bytes or human-readable
+    min_total_memory: int | str | None = None,  # in bytes or human-readable
     max_gpu_utilization: int | None = None,  # in percentage
     max_memory_utilization: int | None = None,  # in percentage
     tolerance: int = 0,  # in percentage
@@ -148,7 +148,7 @@ def select_devices(
     """Select a subset of devices satisfying the specified criteria.
 
     Note:
-        The *min count* constraint may not be satisfied if the no enough devices are available. This
+        The *min count* constraint may not be satisfied if not enough devices are available. This
         constraint is only enforced when there are both MIG and non-MIG devices present.
 
     Examples:
@@ -177,10 +177,10 @@ def select_devices(
         max_count (Optional[int]):
             The maximum number of devices to select.
         min_free_memory (Optional[Union[int, str]]):
-            The minimum free memory (an :class:`int` *in bytes* or a :class:`str` in human readable
+            The minimum free memory (an :class:`int` *in bytes* or a :class:`str` in human-readable
             form) of the selected devices.
         min_total_memory (Optional[Union[int, str]]):
-            The minimum total memory (an :class:`int` *in bytes* or a :class:`str` in human readable
+            The minimum total memory (an :class:`int` *in bytes* or a :class:`str` in human-readable
             form) of the selected devices.
         max_gpu_utilization (Optional[int]):
             The maximum GPU utilization rate (*in percentage*) of the selected devices.
@@ -456,7 +456,7 @@ def parse_arguments() -> argparse.Namespace:
         metavar='TOL',
         help=(
             'The constraints tolerance (in percentage). (default: 0, i.e., strict)\n'
-            'This option can loose the constraints if the requested resource is not available.\n'
+            'This option can loosen the constraints if the requested resource is not available.\n'
             'For example, set `--tolerance=20` will accept a device with only 4GiB of free\n'
             'memory when set `--min-free-memory=5GiB`.'
         ),

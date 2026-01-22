@@ -205,7 +205,7 @@ Install from conda-forge ([![conda-forge](https://img.shields.io/conda/v/conda-f
 conda install -c conda-forge nvitop
 ```
 
-Install the latest version from GitHub (![Commit Count](https://img.shields.io/github/commits-since/XuehaiPan/nvitop/v1.6.0)):
+Install the latest version from GitHub (![Commit Count](https://img.shields.io/github/commits-since/XuehaiPan/nvitop/v1.6.1)):
 
 ```bash
 pip3 install --upgrade pip setuptools
@@ -215,8 +215,7 @@ pip3 install git+https://github.com/XuehaiPan/nvitop.git#egg=nvitop
 Or, clone this repo and install manually:
 
 ```bash
-git clone --depth=1 https://github.com/XuehaiPan/nvitop.git
-cd nvitop
+git clone --depth=1 https://github.com/XuehaiPan/nvitop.git && cd nvitop
 pip3 install .
 ```
 
@@ -507,7 +506,7 @@ coloring:
   --colorful            Use gradient colors to get spectrum-like bar charts. This option is only available
                         when the terminal supports 256 colors. You may need to set environment variable
                         `TERM="xterm-256color"`. Note that the terminal multiplexer, such as `tmux`, may
-                        override the `TREM` variable.
+                        override the `TERM` variable.
   --force-color         Force colorize even when `stdout` is not a TTY terminal.
   --light               Tweak visual results for light theme terminals in monitor mode.
                         Set variable `NVITOP_MONITOR_MODE="light"` on light terminals for convenience.
